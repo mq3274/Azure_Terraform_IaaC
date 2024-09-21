@@ -1,0 +1,1 @@
+rg-names= ["rg1","rg2","rg3","rg4","rg5","rg6"]
