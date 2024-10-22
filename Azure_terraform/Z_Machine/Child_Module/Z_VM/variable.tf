@@ -1,0 +1,2 @@
+
+variable "vm-name" {}
