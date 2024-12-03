@@ -1,6 +1,6 @@
 rg_map= {
   rg1 = "westUS"
   rg2 = "eastUS"
-  dhondhu = "westUS"
+  dhonda = "westUS"
 }
 
