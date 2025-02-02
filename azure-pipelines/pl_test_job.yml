@@ -1,0 +1,13 @@
+pool: Private agent
+
+trigger: none
+
+jobs:
+  - job: testjob
+    displayName: My First Job
+    continueOnError: true
+    workspace:
+     clean: outputs
+
+    steps:
+    - script: echo my first job

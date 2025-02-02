@@ -1,0 +1,43 @@
+pool: Private agent
+
+trigger: none
+
+steps:
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Virtual_Machine_2'
+    backendServiceArm: 'my service-wif'
+    backendAzureRmResourceGroupName: 'test'
+    backendAzureRmStorageAccountName: 'test'
+    backendAzureRmContainerName: 'test'
+    backendAzureRmKey: 'terraform.tfstate'
+  displayName: Terraform init  
+
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Virtual_Machine_2'
+    environmentServiceNameAzureRM: 'my service-wif'
+
+  displayName: Terraform plan  
+ 
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Virtual_Machine_2'
+    environmentServiceNameAzureRM: 'my service-wif'
+
+  displayName: Terraform apply  
+
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'azurerm'
+    command: 'destroy'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Virtual_Machine_2'
+    environmentServiceNameAzureRM: 'my service-wif'
+
+  displayName: Terraform destroy  

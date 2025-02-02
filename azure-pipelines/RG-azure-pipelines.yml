@@ -1,0 +1,111 @@
+pool: Private agent
+
+trigger: none
+
+parameters:
+  - name: environment
+    type: string
+    default: 'dev'
+    # values:
+    #   - dev
+    #   - prod
+
+variables:
+  work-dir: '$(System.DefaultWorkingDirectory)/Azure_terraform/Basic-RG'
+stages:
+  - stage: 
+    displayName: init and plan
+    jobs:
+      # - job: tf_sec
+      #   displayName: tf-sec-scan
+      #   steps:
+      #   - task: tfsec@1
+      #     inputs:
+      #       version: 'v1.26.0'
+      #       dir: '$(work-dir)'
+
+      - job: rg_creation
+        displayName: rg-creation
+        # dependsOn: tf_sec
+        steps:
+        - task: TerraformTaskV4@4
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(work-dir)'
+            backendServiceArm: 'my service-wif'
+            backendAzureRmResourceGroupName: 'test'
+            backendAzureRmStorageAccountName: 'test'
+            backendAzureRmContainerName: 'test'
+            backendAzureRmKey: '${{parameters.environment}}.terraform.tfstate'
+          displayName: terraform init
+        
+        - task: TerraformTaskV4@4
+          inputs:
+            provider: 'azurerm'
+            command: 'validate'
+            workingDirectory: '$(work-dir)'
+          displayName: terraform validate
+
+        - task: TerraformTaskV4@4
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: '$(work-dir)'
+            environmentServiceNameAzureRM: 'my service-wif'
+            commandOptions:  --var-file=${{parameters.environment}}.terraform.tfvars
+          displayName: terraform plan
+
+  - stage: 
+    displayName: validate and apply
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
+    jobs:          
+      - job: Manual_validation
+        displayName: Manual_validation
+        continueOnError: true
+        pool: server
+        steps:
+          - task: Delay@1
+            inputs:
+               delayForMinutes: '0'
+
+          - task: ManualValidation@1
+            inputs:
+              notifyUsers: 'abc@xyz.com'
+              allowApproversToApproveTheirOwnRuns: true
+              instructions: 'please validate my code' 
+    
+      - job: terraform_apply
+        dependsOn: Manual_validation
+        displayName: terraform_apply
+        continueOnError: true
+        steps:
+        - task: TerraformTaskV4@4
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(work-dir)'
+            backendServiceArm: 'my service-wif'
+            backendAzureRmResourceGroupName: 'test'
+            backendAzureRmStorageAccountName: 'test'
+            backendAzureRmContainerName: 'test'
+            backendAzureRmKey: '${{parameters.environment}}.terraform.tfstate'
+          displayName: terraform init
+       
+        - task: TerraformTaskV4@4
+          inputs:
+            provider: 'azurerm'
+            command: 'apply'
+            workingDirectory: '$(work-dir)'
+            environmentServiceNameAzureRM: 'my service-wif'
+            commandOptions:  --var-file=${{parameters.environment}}.terraform.tfvars
+          displayName: terraform apply   
+
+        # - task: TerraformTaskV4@4
+        #   inputs:
+        #     provider: 'azurerm'
+        #     command: 'destroy'
+        #     workingDirectory: '$(work-dir)'
+        #     environmentServiceNameAzureRM: 'my service-wif'
+        #     commandOptions:  --var-file=${{parameters.environment}}.terraform.tfvars
+        #   displayName: Terraform destroy              

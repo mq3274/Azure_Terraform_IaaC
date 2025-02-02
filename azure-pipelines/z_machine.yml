@@ -1,0 +1,68 @@
+pool: Private agent
+trigger: none
+
+jobs:
+  - job: zmachine
+    displayName: terraform init plan
+    steps:
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Z_Machine/Parent'
+        backendServiceArm: 'my service-wif'
+        backendAzureRmResourceGroupName: 'test'
+        backendAzureRmStorageAccountName: 'test'
+        backendAzureRmContainerName: 'test'
+        backendAzureRmKey: 'test'
+      displayName: terraform init
+
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Z_Machine/Parent'
+        environmentServiceNameAzureRM: 'my service-wif'
+      displayName: terraform plan  
+
+  - job: manualvalidation
+    displayName: manual validation
+    dependsOn: zmachine
+    pool: server
+    steps:
+    - task: ManualValidation@1
+      inputs:
+        notifyUsers: 'mahi@abc.com'
+  - job: Terraformapply
+    displayName: terraform apply
+    dependsOn: manualvalidation
+    steps: 
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Z_Machine/Parent'
+        backendServiceArm: 'my service-wif'
+        backendAzureRmResourceGroupName: 'test'
+        backendAzureRmStorageAccountName: 'test'
+        backendAzureRmContainerName: 'test'
+        backendAzureRmKey: 'test'
+      displayName: terraform init
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Z_Machine/Parent'
+        environmentServiceNameAzureRM: 'my service-wif'
+      displayName: terraform apply  
+
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'destroy'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Z_Machine/Parent'
+        environmentServiceNameAzureRM: 'my service-wif'
+      displayName: terraform destroy   
+
+
+

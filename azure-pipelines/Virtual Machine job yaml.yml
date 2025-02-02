@@ -1,0 +1,89 @@
+pool:
+  name: Private agent
+trigger:
+  branches:
+    include:
+    - main
+stages:
+- stage: __default
+  jobs:
+  - job: initjob
+    displayName: terraform init plan
+    continueOnError: true
+    steps:
+    - task: CmdLine@2
+      inputs:
+        script: 'echo $(System.DefaultWorkingDirectory)'
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Virtual_Machine_2'
+        backendServiceArm: 'my service-wif'
+        backendAzureRmResourceGroupName: 'test'
+        backendAzureRmStorageAccountName: 'test'
+        backendAzureRmContainerName: 'test'
+        backendAzureRmKey: 'terraform.tfstate'
+      displayName: terraform init
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Virtual_Machine_2'
+        environmentServiceNameAzureRM: 'my service-wif'
+      displayName: terraform plan
+  - job: manualvalid
+    displayName: Manual validation
+    continueOnError: true
+    pool:
+      name: server
+    dependsOn:
+    - initjob
+    steps:
+    - task: ManualValidation@1
+      inputs:
+        notifyUsers: 'abc@xyz.com'
+        allowApproversToApproveTheirOwnRuns: true
+        instructions: 'please validate my code'
+  - job: applyjob
+    dependsOn:
+    - initjob
+    displayName: terraform apply
+    continueOnError: true
+    steps:
+    - task: CmdLine@2
+      inputs:
+        script: 'echo $(System.DefaultWorkingDirectory)'
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Virtual_Machine_2'
+        backendServiceArm: 'my service-wif'
+        backendAzureRmResourceGroupName: 'test'
+        backendAzureRmStorageAccountName: 'test'
+        backendAzureRmContainerName: 'test'
+        backendAzureRmKey: 'terraform.tfstate'
+      displayName: terraform init
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Virtual_Machine_2'
+        environmentServiceNameAzureRM: 'my service-wif'
+      displayName: terraform plan
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Virtual_Machine_2'
+        environmentServiceNameAzureRM: 'my service-wif'
+      displayName: terraform apply
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'destroy'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Virtual_Machine_2'
+        environmentServiceNameAzureRM: 'my service-wif'
+      displayName: Terraform destroy
+
