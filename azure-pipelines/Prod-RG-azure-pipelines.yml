@@ -1,0 +1,12 @@
+pool: Private agent
+
+trigger: 
+- main
+
+variables:
+  work-dir: '$(System.DefaultWorkingDirectory)/Azure_terraform/Basic-RG'
+
+stages:
+  - template: pipeline-template.yml
+    parameters:
+      environment: prod

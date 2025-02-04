@@ -1,17 +1,5 @@
-pool: Private agent
-
-trigger: none
-
 parameters:
   - name: environment
-    type: string
-    default: 'dev'
-    values:
-      - dev
-      - prod
-
-variables:
-  work-dir: '$(System.DefaultWorkingDirectory)/Azure_terraform/Basic-RG'
 
 stages:
   - stage: initandplan
@@ -22,6 +10,7 @@ stages:
         steps:
         - task: tfsec@1
           inputs:
+            
             version: 'v1.26.0'
             dir: '$(work-dir)'
 

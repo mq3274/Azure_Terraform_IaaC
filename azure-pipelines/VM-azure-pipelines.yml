@@ -11,7 +11,7 @@ parameters:
       - prod
 
 variables:
-  work-dir: '$(System.DefaultWorkingDirectory)/Azure_terraform/Basic-RG'
+  work-dir: '$(System.DefaultWorkingDirectory)/Azure_terraform/Z_Machine/Parent'
 
 stages:
   - stage: initandplan
