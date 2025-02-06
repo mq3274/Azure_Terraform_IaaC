@@ -5,18 +5,47 @@ stages:
   - stage: initandplan
     displayName: init and plan
     jobs:
-      - job: tf_sec
-        displayName: tf-sec-scan
+      - job: security_check
+        displayName: security_check
         steps:
         - task: tfsec@1
           inputs:
-            
             version: 'v1.26.0'
             dir: '$(work-dir)'
+          displayName: tf-sec-scan
 
-      - job: rg_creation
-        displayName: rg-creation
-        dependsOn: tf_sec
+        - task: CmdLine@2
+          inputs:
+            script: 'checkov -d . -o junitxml --output-path-file $(System.DefaultWorkingDirectory)/checkov_report.xml'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Basic-RG'
+          displayName: 'checkov' 
+
+        - task: PublishTestResults@2
+          condition: always()
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: 'checkov_report.xml'
+            searchFolder: '$(System.DefaultWorkingDirectory)/Azure_terraform/Basic-RG'
+          displayName: 'Publish Checkov JUnit Results to Azure DevOps'  
+
+        - task: CmdLine@2
+          condition: always()
+          inputs:
+            script: 'tflint --chdir=. --format=junit > tflint_report.xml'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Azure_terraform/Basic-RG'      
+          displayName: 'Run TFLint'    
+
+        - task: PublishTestResults@2
+          condition: always()
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: 'tflint_report.xml'
+            searchFolder: '$(System.DefaultWorkingDirectory)/Azure_terraform/Basic-RG'
+          displayName: 'Publish tflint JUnit Results to Azure DevOps'      
+
+      - job: initandplan
+        displayName: init and plan
+        dependsOn: security_check
         steps:
         - task: TerraformTaskV4@4
           inputs:
