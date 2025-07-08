@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "rg-block" {
-    name = "rg-mac"
+    name = "rg-macbook"
     location = "eastus"
   
 }
