@@ -1,0 +1,3 @@
+rg-map = {
+    macbook ="eastus"
+}
