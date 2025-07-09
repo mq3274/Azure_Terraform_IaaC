@@ -6,11 +6,12 @@ resource "azurerm_resource_group" "rg-block" {
 
 }
 
-# resource "azurerm_storage_account" "stg-block" {
+resource "azurerm_storage_account" "stg-block" {
+  for_each = var.stg-map
 
-#   name                     = "stgmacbook"
-#   resource_group_name      = azurerm_resource_group.rg-block.name
-#   location                 = azurerm_resource_group.rg-block.location
-#   account_tier             = "Standard"
-#   account_replication_type = "GRS"
-# }
+  name                     = each.value.name
+  resource_group_name      = each.value.resource_group_name
+  location                 = each.value.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+}
