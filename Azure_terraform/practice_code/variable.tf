@@ -1,7 +1,3 @@
-variable "rg-map" {
+variable "rg-map" {}
 
-}
-
-variable "stg-map" {
-
-}
+variable "vn-map" {}
